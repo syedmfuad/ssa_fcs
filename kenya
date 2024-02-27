@@ -1,0 +1,144 @@
+
+setwd("C:/Users/syedm/Desktop/UnRar/KEHR8BFL")
+
+# Load the haven package
+library(haven)
+
+# Read the Stata dataset
+data <- read_dta("KEHR8BFL.dta")
+
+# View the first few rows of the dataset
+head(data)
+
+
+# correlation 
+cor_test_result <- cor.test(data$sh134aa, data$sh148a)
+
+print(cor_test_result)
+
+
+
+#subset only FCS variables 
+
+# Subset variables var1 and var3
+fcs_data <- data[, c("sh134aa", "sh148ca", "sh148cb", "sh148cc", "sh148cd", "sh148ce", "sh148cf", 
+                        "sh148cg", "sh148ch", "sh148ci", "sh148cj", "sh148ck", "sh148cl", 
+                        "sh148cm", "sh148cn", "sh148co", "sh148cp")]
+
+# View subsetted data
+print(fcs_data)
+
+fcs_data$staple <- fcs_data$sh148ca + fcs_data$sh148cb
+fcs_data$pulse <- fcs_data$sh148cc
+fcs_data$veg <- fcs_data$sh148cd + fcs_data$sh148ce + fcs_data$sh148cf 
+fcs_data$fruit <- fcs_data$sh148cg + fcs_data$sh148ch
+fcs_data$meat <- fcs_data$sh148ci + fcs_data$sh148cj + fcs_data$sh148ck + fcs_data$sh148cl 
+fcs_data$milk <- fcs_data$sh148cm
+fcs_data$sugar <- fcs_data$sh148co
+fcs_data$oil <- fcs_data$sh148cn
+
+# Define the weights for each food group
+weights <- c(2, 3, 1, 1, 4, 4, 0.5, 0.5)
+
+# Group food items into specified food groups
+food_groups <- c("staple", "pulse", "veg", "fruit", "meat", "milk", "sugar", "oil")
+
+# Calculate the weighted food group scores
+fcs_data$fcs <- rowSums(fcs_data[, food_groups] * weights)
+
+# Determine the household's food consumption status
+fcs_data$fcs_status <- cut(fcs_data$fcs, breaks = c(0, 21, 21.5, 35, Inf), labels = c("Poor", "Borderline", "Acceptable", "Excellent"))
+
+# Print the dataframe with the new fcs and fcs_status columns
+print(fcs_data)
+
+fcs_data <- na.omit(fcs_data)
+
+# Create a contingency table
+contingency_table <- table(fcs_data$fcs_status, fcs_data$sh134aa)
+
+# Print the contingency table
+print(contingency_table)
+
+
+#CHI SQUARE 
+
+
+# Perform chi-square test
+chi_sq_test <- chisq.test(fcs_data$fcs_status, fcs_data$sh134aa)
+
+# Print the results of the chi-square test
+print(chi_sq_test)
+
+#With a small p-value, you would conclude that there is a significant association between the household's food consumption status ("fcs_status") 
+#and whether the household receives government assistance ("sh134aa"). 
+#This association could indicate that the food consumption status varies significantly depending on whether the household receives government assistance.
+
+
+
+
+contingency_table <- table(fcs_data$sh134aa, fcs_data$fcs_status) 
+
+# Print the contingency table
+print(contingency_table)
+
+# Calculate the relative risk
+# Relative Risk = (Risk in exposed group) / (Risk in unexposed group)
+risk_exposed <- contingency_table[2, ] / sum(contingency_table[2, ])
+risk_unexposed <- contingency_table[1, ] / sum(contingency_table[1, ])
+relative_risk <- risk_exposed / risk_unexposed
+
+# Print the relative risk
+print(relative_risk)
+
+# Calculate the odds ratio
+# Odds Ratio = (odds of outcome in exposed group) / (odds of outcome in unexposed group)
+odds_exposed <- contingency_table[2, 2] / contingency_table[2, 1]
+odds_unexposed <- contingency_table[1, 2] / contingency_table[1, 1]
+odds_ratio <- odds_exposed / odds_unexposed
+
+# Print the odds ratio
+print(odds_ratio)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Get names of all variables in the data frame
+variable_names <- names(data)
+
+# Print variable names
+print(variable_names)
+
+# Find index of variable by name
+variable_name <- "sh148cb" 
+variable_index <- which(variable_names == variable_name)
+
+# Access variable by name
+variable <- data[, variable_index]
+
+# Print variable
+print(variable)
+
+
+
